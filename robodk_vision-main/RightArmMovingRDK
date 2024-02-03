@@ -1,0 +1,55 @@
+# Importa la librería de RoboDK para Python
+from robolink import *
+from robodk import *
+import time
+
+# Conecta con el API de RoboDK
+RDK = Robolink()
+
+# Carga la estación RoboDK desde la ubicación del archivo
+estacion_rdk_path = "C:/Users/usuario/Documents/source/repos/KinectXRoboDK/robodk_vision-main/ESTACION KR10.rdk"
+RDK.AddFile(estacion_rdk_path)
+
+# Obtén el robot de la estación actual (asegúrate de que el robot esté cargado en la estación)
+robot = RDK.ItemUserPick("Selecciona un robot", ITEM_TYPE_ROBOT)
+
+if not robot.Valid():
+    raise Exception("No se ha seleccionado un robot válido")
+
+# Ruta del archivo de coordenadas
+archivo_coordenadas_path = "C:/Users/usuario/Documents/source/repos/KinectXRoboDK/robodk_vision-main/coordenadas.txt"
+
+# Función para obtener coordenadas desde el archivo
+def obtener_coordenadas_desde_archivo():
+    x_codo, y_codo, x_muneca, y_muneca, x_movimiento, y_movimiento = 0, 0, 0, 0, 0, 0
+    with open(archivo_coordenadas_path, "r") as archivo:
+        lineas = archivo.readlines()
+        for linea in lineas:
+            if "Codo:" in linea:
+                x_codo = float(linea.split("x=")[1].split(",")[0].strip())
+                y_codo = float(linea.split("y=")[1].split(",")[0].strip())
+            elif "Muñeca:" in linea:
+                x_muneca = float(linea.split("x=")[1].split(",")[0].strip())
+                y_muneca = float(linea.split("y=")[1].strip())
+            elif "Movimiento:" in linea:
+                x_movimiento = float(linea.split("x=")[1].split(",")[0].strip())
+                y_movimiento = float(linea.split("y=")[1].strip())
+    return (x_codo, y_codo, x_muneca, y_muneca, x_movimiento, y_movimiento)
+
+# Función para mover el robot a una posición específica
+def mover_robot_a_posicion(x, y):
+    target_pose = robot.Pose()
+    target_pose.setPos([x, y, target_pose.Pos()[2]])
+    robot.MoveJ(target_pose)  # Mueve el robot a la posición
+
+# Bucle principal para leer y mover el robot continuamente
+while True:
+    # Obtén las coordenadas desde el archivo
+    coordenadas = obtener_coordenadas_desde_archivo()
+    
+    # Descomponer las coordenadas
+    x_codo, y_codo, x_muneca, y_muneca, x_movimiento, y_movimiento = coordenadas
+    
+    # Realiza el movimiento en función de las coordenadas
+    mover_robot_a_posicion(x_codo, y_codo)
+    #time.sleep(1/2)  # Espera antes de moverse a la siguiente posición
