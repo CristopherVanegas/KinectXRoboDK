@@ -1,4 +1,5 @@
 import random
+import pickle
 
 # Función para generar una coordenada aleatoria en el rango especificado
 def generar_coordenada():
@@ -7,16 +8,21 @@ def generar_coordenada():
 # Nombres de las posiciones del robot
 nombres_posiciones = ["Hombro derecho", "Codo derecho", "Muñeca derecha", "Mano derecha"]
 
-# Abre el archivo para escritura en la ruta especificada
-with open(r'C:\Users\usuario\Documents\source\repos\KinectXRoboDK\robodk_vision-main\KinectxRDK\coordenadas_kinect.txt', 'w') as archivo:
+# Preparar los datos para guardar
+datos_para_guardar = []
 
-    # Genera y guarda las coordenadas para cada posición del robot
-    for nombre in nombres_posiciones:
-        x = generar_coordenada()
-        y = generar_coordenada()
-        z = generar_coordenada()
+for nombre in nombres_posiciones:
+    x = generar_coordenada()
+    y = generar_coordenada()
+    z = generar_coordenada()
 
-        coordenadas = f"{nombre} (X, Y, Z): ({x}, {y}, {z})"
-        archivo.write(coordenadas + '\n')
+    coordenadas = {"nombre": nombre, "x": x, "y": y, "z": z}
+    datos_para_guardar.append(coordenadas)
 
-print("Coordenadas generadas y guardadas en 'coordenadas_kinect.txt'")
+# Abre el archivo para escritura binaria en la ruta especificada
+ruta_archivo_binario = r'C:\Users\usuario\Documents\source\repos\KinectXRoboDK\robodk_vision-main\KinectxRDK\coordenadas_kinect.bin'
+with open(ruta_archivo_binario, 'wb') as archivo_bin:
+    # Guarda los datos en formato binario
+    pickle.dump(datos_para_guardar, archivo_bin)
+
+print("Coordenadas generadas y guardadas en 'coordenadas_kinect.bin'")
